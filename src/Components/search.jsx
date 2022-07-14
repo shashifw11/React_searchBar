@@ -1,26 +1,33 @@
  import {useState , useEffect} from "react" ; 
+ import {Link} from "react-router-dom" ; 
  import axios from "axios" ; 
-
+ 
+ 
 export const Search = () =>{
     const [text , setText] = useState("") ; 
     const [search_data , setSearch_data] = useState([]) ; 
+    const [loading , setLoading] =  useState(false) ; 
    
        console.log(search_data) 
      
-    
+      
    const searchData = async ()=>{
-          try{ 
-             axios.get(`http://localhost:8080/data?q=${text}`).then((data)=>{
+         try{ 
+            setLoading(true)
+           axios.get(`http://localhost:8080/data?q=${text}`).then((data)=>{
                   return  setSearch_data(data.data)
-             }) ;
-              }catch(err){
-                 console.log("err", err); 
+             })
+                }catch(err){
+                   console.log("err", err); 
                }
-          }
+               setLoading(false)
+            }
 
 
-     const getData = async ()=>{
-        search_data = await searchData() ; 
+  const getData = async ()=>{
+       search_data = await searchData() ; 
+      
+      
         if(search_data === undefined){
             return false
         }else{
@@ -28,6 +35,7 @@ export const Search = () =>{
                 return setSearch_data(item)
             })
         }
+       
     }    
 
     const Debounce=(fn,d)=>{
@@ -37,18 +45,18 @@ export const Search = () =>{
            let args = arguments ; 
          clearTimeout(timer) ; 
              timer =   setTimeout(()=>{
+                
                  getData.apply(context,arguments);
+               
                } , d)
-        }
+          }
      } 
 
-     const SerachBar = Debounce(getData,300) ; 
+     const SerachBar = Debounce(getData,400) ; 
 
     return <div>
        <input type = "text"  onKeyUp={SerachBar}  onChange = {(e)=>setText(e.target.value)} placeholder = "search country"/>
        <button>Search</button>
-       {search_data.slice(0,5).map((item,i)=>{
-        return <div key = {i}>{item.country}</div>
-       })}
+       {search_data.slice(0,7).map((item,i)=> loading ? ("LOADING..."): (<Link to = {`${item.id}`}><div key = {i}>{item.country}</div></Link>))}
      </div>
 }
